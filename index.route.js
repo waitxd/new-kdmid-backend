@@ -1,5 +1,5 @@
 const express = require('express');
-const userRoutes = require('./server/user.backup/user.route');
+const userRoutes = require('./server/user/user.controller');
 const ds160Routes = require('./server/ds-160/ds-160.route');
 const authRoutes = require('./server/auth/auth.route');
 const assetRoutes = require('./server/assets/assets.route');
