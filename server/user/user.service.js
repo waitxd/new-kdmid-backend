@@ -9,14 +9,16 @@ module.exports = {
     getById,
     create,
     update,
-    delete: _delete
+    delete: _delete,
+    approve,
+    suspend
 };
 
 async function authenticate({ username, password }) {
     const user = await User.findOne({ username });
     if (user && bcrypt.compareSync(password, user.hash)) {
         const { hash, ...userWithoutHash } = user.toObject();
-        const token = jwt.sign({ sub: user.id }, config.secret);
+        const token = jwt.sign({ sub: user.id, role: user.role, username: user.username }, config.jwtSecret);
         return {
             ...userWithoutHash,
             token
@@ -65,6 +67,34 @@ async function update(id, userParam) {
 
     // copy userParam properties to user
     Object.assign(user, userParam);
+
+    await user.save();
+}
+
+async function approve(id) {
+    const user = await User.findById(id);
+
+    // validate
+    if (!user) throw 'User not found';
+
+    // copy userParam properties to user
+    Object.assign(user, {
+        approved: true
+    });
+
+    await user.save();
+}
+
+async function suspend(id) {
+    const user = await User.findById(id);
+
+    // validate
+    if (!user) throw 'User not found';
+
+    // copy userParam properties to user
+    Object.assign(user, {
+        approved: false
+    });
 
     await user.save();
 }
