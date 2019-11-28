@@ -1,4 +1,9 @@
 
+const USER_ROLE = {
+    ADMIN: 0,
+    AGENCY: 1
+}
+
 const countries_option_value_list = ["KBL", "TIA"
 , "ALG"
 , "LUA"
@@ -448,5 +453,6 @@ const countries_option_label_list = [
 ]
 module.exports = {
     countries_option_value_list,
-    countries_option_label_list
+    countries_option_label_list,
+    USER_ROLE
 }
