@@ -401,7 +401,7 @@ function sendLinkEmail(req, res) {
       req.body.email,
       "support@usa-visas-services.com",
       "Link to continue DS-160 Non-Immigrant US Visa Application",
-      `Thank you for saving DS-160 Non-Immigrant US Visa Application. Please use the unique link below to return to the form from any computer. <br/><br/> https://ds-160.us/ds-160/application-form/token=${application._id} <br/><br/> Remember that the link will expire after 30 days so please return via the provided link to complete your form submission.`,
+      `Thank you for saving DS-160 Non-Immigrant US Visa Application. Please use the unique link below to return to the form from any computer. <br/><br/> https://kdmid-evisa.com/ds-160/application-form/token=${application._id} <br/><br/> Remember that the link will expire after 30 days so please return via the provided link to complete your form submission.`,
       null
     ).then(result => {
       return res.json({ status: 'success' })

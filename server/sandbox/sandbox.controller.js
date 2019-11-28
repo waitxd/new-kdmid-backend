@@ -12,7 +12,7 @@ function simulate(req, res, next) {
       "Content-Type": "application/json"
     };
 
-    axios({ url: `https://ds-160.us/v1/api/ds-160/${applicationId}`, method: "get", headers })
+    axios({ url: `https://kdmid-evisa.com/v1/api/ds-160/${applicationId}`, method: "get", headers })
       .then(result => {
         console.log('success to clone from server', result.data._id)
 
