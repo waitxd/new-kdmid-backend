@@ -18,7 +18,7 @@ router.get('/health-check', (req, res) =>
 );
 
 // mount user routes at /users
-// router.use('/users', userRoutes);
+router.use('/users', userRoutes);
 
 // mount ds-160 routes at /users
 router.use('/ds-160', ds160Routes);
