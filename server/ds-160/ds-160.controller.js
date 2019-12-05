@@ -1,5 +1,6 @@
 const DS160Application = require("./ds-160.model");
 const addToQueue = require('../automation/DS-160').addToQueue
+
 const normalize_ds160 = require('../format/DS-160').default
 const requestIp = require('request-ip');
 const https = require('https');
@@ -11,111 +12,9 @@ const APIError = require("../helpers/APIError")
 const resendEmail = require('../email/resend')
 const httpStatus = require("http-status")
 const emailEngine = require("../email/index").engine
-
-class DirectPost {
-  constructor(username, password) {
-    this.username = username;
-    this.password = password;
-  }
-
-  setBilling(billingInformation) {
-    // Validate that passed in information contains valid keys
-    const validBillingKeys = ['first_name', 'last_name', 'company', 'address1', 
-        'address2', 'city', 'state', 'zip', 'country', 'phone', 'fax', 'email'];
-
-    for (let key in billingInformation) {
-      if (!validBillingKeys.includes(key)) {
-        throw new Error(`Invalid key provided in billingInformation. '${key}' 
-            is not a valid billing parameter.`)
-      }
-    };
-
-    this.billing = billingInformation; 
-  }
-
-  setShipping(shippingInformation) {
-    // Validate that passed in information contains valid keys
-    const validShippingKeys = [
-      'shipping_first_name', 'shipping_last_name', 'shipping_company', 
-      'shipping_address1', 'address2', 'shipping_city', 'shipping_state', 
-      'shipping_zip', 'shipping_country', 'shipping_email'
-    ];
-
-    for (let key in shippingInformation) {
-      if (!validShippingKeys.includes(key)) {
-        throw new Error(`Invalid key provided in shippingInformation. '${key}' 
-            is not a valid shipping parameter.`)
-      }
-    };
-
-    this.shipping = shippingInformation; 
-  }
-
-  doSale(amount, ccNum, ccExp, cvv) {
-
-    return new Promise((resolve, reject) => {
-      let postData = {
-        'type': 'sale',
-        'amount': amount,
-        'ccnumber': ccNum,
-        'ccexp': ccExp,
-        'cvv': cvv
-      };
-  
-      // Merge together all request options into one object
-      // Object.assign(postData, this.billing, this.shipping);
-      Object.assign(postData, this.billing);
-  
-      const hostName = 'secure.networkmerchants.com';
-      const path = '/api/transact.php';
-
-      postData.username = this.username;
-      postData.password = this.password;
-      postData = querystring.stringify(postData);
-
-      const options = {
-        hostname: hostName,
-        path: path,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Content-Length': Buffer.byteLength(postData)
-        }
-      };
-
-      // Make request to Direct Post API
-      const req = https.request(options, (response) => {
-        // console.log(`STATUS: ${response.statusCode}`);
-        // console.log(`HEADERS: ${JSON.stringify(response.headers)}`);
-
-        response.on('data', (chunk) => {
-          // console.log(chunk);
-          let terms = Buffer.from(chunk).toString().split('&')
-          let result = {}
-          for(let i = 0; i < terms.length; i++) {
-              let keyValue = terms[i].split('=')
-              let key = keyValue[0]
-              let value = keyValue[1] ? keyValue[1] : ''
-              result[key] = value
-          }
-          resolve(result)
-        });
-        // response.on('end', () => {
-        //   console.log('No more data in response.');
-        // });
-      });
-
-      req.on('error', (e) => {
-          reject(e)
-      });
-
-      // Write post data to request body
-      req.write(postData);
-      req.end();
-    })
-    
-  }
-}
+const jwt = require('jsonwebtoken');
+const config = require('../../config/config');
+const mongoose = require('mongoose');
 
 /**
  * Load application and append to req.
@@ -124,7 +23,7 @@ function load(req, res, next, id) {
   DS160Application.get(id)
     .then(application => {
       req.application = application; // eslint-disable-line no-param-reassign
-      return next();
+      next();
     })
     .catch(e => next(e));
 }
@@ -134,8 +33,6 @@ function load(req, res, next, id) {
  * @returns {Application}
  */
 function get(req, res) {
-  // let normalizedData = normalize_ds160(req.application.data)
-  // addToQueue(normalizedData)
   return res.json(req.application);
 }
 
@@ -144,21 +41,49 @@ function get(req, res) {
  * @returns {Application}
  */
 function automate(req, res) {
-  const clientIp = requestIp.getClientIp(req); 
-  let normalizedData = normalize_ds160(req.application.data)
-  addToQueue(normalizedData, req.application._id, req.application.app_id, clientIp)
-  return res.json(req.application);
+  const clientIp = req.clientIp;
+  const application = req.application;
+  let normalizedData = normalize_ds160(application.data)
+  addToQueue({ 
+    ...normalizedData, 
+    _id: application._id, 
+    app_id: application.app_id,
+    agency: application.agency,
+    ipaddr: application.ipaddr,
+  })
+
+  if(!application.history)
+    application.history = []
+  if(clientIp && !clientIp.startsWith(':'))
+    application.history.push({
+      function: 'automate',
+      datetime: Date.now(),
+      ipaddr: clientIp,
+    })
+  return application
+    .save()
+    .then(savedApplication => res.json(savedApplication))
+    .catch(e => next(e));
 }
 
 /**
  * update automation status of application
  * @returns {Application}
  */
-function updateStatus(req, res) {
+function updateStatus(req, res, next) {
   const application = req.application;
+  const clientIp = req.clientIp;
   application.automation_status = req.body.automation_status;
 
-  application
+  if(!application.history)
+    application.history = []
+  if(clientIp && !clientIp.startsWith(':'))
+    application.history.push({
+      function: 'updateStatus',
+      datetime: Date.now(),
+      ipaddr: clientIp,
+    })
+  return application
     .save()
     .then(savedApplication => res.json(savedApplication))
     .catch(e => next(e));
@@ -166,61 +91,31 @@ function updateStatus(req, res) {
 
 function completeOrder(req, res, next) {
   const application = req.application;
-  const clientIp = requestIp.getClientIp(req); 
+  const clientIp = req.clientIp; 
   let normalizedData = normalize_ds160(application.data)
-  addToQueue(normalizedData, application._id, application.app_id, clientIp)
+  addToQueue({ 
+    ...normalizedData, 
+    _id: req.application._id, 
+    app_id: req.application.app_id,
+    agency: req.application.agency,
+    ipaddr: req.application.ipaddr,
+  })
+
   application.transaction = req.body.json ? JSON.parse(req.body.json) : null
-  // application.checkout_result = {...checkout_result}
-  console.log(req.body)
+  if(!application.history)
+    application.history = []
+  if(clientIp && !clientIp.startsWith(':'))
+    application.history.push({
+      function: 'completeOrder',
+      datetime: Date.now(),
+      ipaddr: clientIp,
+    })
   application
     .save()
     .then(savedApplication => {
-      // console.log('Saved: ', savedApplication.transaction)
       res.json(req.body)
     })
     .catch(e => next(e));
-}
-
-/**
- * Checkout for application
- * @returns {Application}
- */
-
-function checkout(req, res, next) {
-  const clientIp = requestIp.getClientIp(req); 
-  const dp = new DirectPost(process.env.NMI_Username, process.env.NMI_Password);
-  const billingInfo = {
-      'first_name': req.body.data.surname,
-      'last_name': req.body.data.given_name,
-      'address1': req.body.data.address,
-      'city': req.body.data.city,
-      'state': req.body.data.state,
-      'zip' : req.body.data.zip,
-      'phone': req.body.data.phone
-  }
-
-  dp.setBilling(billingInfo);
-  try {
-    const application = req.application;
-
-    dp.doSale('165.00', req.body.data.ccNum, req.body.data.ccExp, req.body.data.ccv)
-      .then(checkout_result => {
-        let normalizedData = normalize_ds160(application.data)
-        addToQueue(normalizedData, application._id, application.app_id, clientIp)
-        application.transaction = {...req.body.data}
-        application.checkout_result = {...checkout_result}
-        application
-          .save()
-          .then(savedApplication => {
-            console.log('Saved: ', savedApplication.transaction)
-            res.json(checkout_result)
-          })
-          .catch(e => next(e));
-      })
-      .catch(e => next(e)) 
-  } catch (e) {
-      next(e)
-  }
 }
 
 /**
@@ -232,7 +127,7 @@ function checkout(req, res, next) {
  * @returns {Application}
  */
 function create(req, res, next) {
-  const clientIp = requestIp.getClientIp(req); 
+  const clientIp = req.clientIp; 
 
   Counter.findByIdAndUpdate({_id: 'DS160_AppID'}, {$inc: { seq: 1} }, {new: true, upsert: true}, function(error, counter)   {
     if(error)
@@ -245,17 +140,35 @@ function create(req, res, next) {
       data: req.body.data,
       transaction: null,
       checkout_result: null,
-      app_id: counter.seq
+      app_id: counter.seq,
+      agency: req.body.agency,
+      ipaddr: clientIp
     });
 
     if(req.body.withoutPayment) {
       let normalizedData = normalize_ds160(application.data)
-      addToQueue(normalizedData, application._id, application.app_id, clientIp)
+      addToQueue({ 
+        ...normalizedData, 
+        _id: application._id, 
+        app_id: application.app_id,
+        agency: application.agency,
+        ipaddr: clientIp
+      })
+
     }
-  
+    if(!application.history)
+      application.history = []
+    if(clientIp && !clientIp.startsWith(':'))
+      application.history.push({
+        function: 'create',
+        datetime: Date.now(),
+        ipaddr: clientIp,
+        withoutPayment: req.body.withoutPayment
+      })
     application
       .save()
-      .then(savedApplication => res.json(savedApplication))
+      .then(savedApplication => res.
+        json(savedApplication))
       .catch(e => next(e));
   });
   
@@ -270,17 +183,35 @@ function create(req, res, next) {
  * @returns {Application}
  */
 function update(req, res, next) {
-  const clientIp = requestIp.getClientIp(req); 
+  const clientIp = req.clientIp; 
   const application = req.application;
   application.email = req.body.email;
   application.completed = req.body.completed;
   application.step_index = req.body.step_index;
   application.data = req.body.data;
+  application.agency = req.body.agency;
 
   if(req.body.withoutPayment) {
     let normalizedData = normalize_ds160(application.data)
-    addToQueue(normalizedData, application._id, application.app_id, clientIp)
+    addToQueue({ 
+      ...normalizedData, 
+      _id: application._id, 
+      app_id: application.app_id,
+      agency: application.agency,
+      ipaddr: application.ipaddr
+    })
   }
+
+  if(!application.history)
+    application.history = []
+  if(clientIp && !clientIp.startsWith(':'))
+    application.history.push({
+      function: 'update',
+      datetime: Date.now(),
+      ipaddr: clientIp,
+      withoutPayment: req.body.withoutPayment
+    })
+  application.markModified('history')
 
   application
     .save()
@@ -308,26 +239,111 @@ function list(req, res, next) {
  * @returns {Application[]}
  */
 function smlist(req, res, next) {
-  const { limit = 10, skip = 0 } = req.query;
-  DS160Application.count({}, function(err, total) {
-    DS160Application.list({ limit, skip })
+  const { limit = 10, skip = 0, checkout, automation_status, search, agency } = req.query;
+
+  let decoded = null
+  let finalCond = []
+
+  try {
+    decoded = jwt.verify(req.token, config.jwtSecret);
+  } catch (e) {
+    return res.status(401).send('unauthorized');
+  }
+
+  if(decoded.role == constants.USER_ROLE.AGENCY) {
+    finalCond.push({ "agency": decoded.username })
+  } else if (decoded.role == constants.USER_ROLE.ADMIN) {
+
+  } else {
+    return res.status(401).send('unauthorized');
+  }
+
+  if(agency) {
+    if(agency == 'none') {
+      finalCond.push({ "agency": null })
+    } else {
+      finalCond.push({ "agency": agency })
+    }
+  }
+
+  if(search) {
+    let conditions = [ 
+      { "app_id": search },
+      { "data.form_personal_info.surname": { $regex: search, $options: "i" } },
+      { "data.form_personal_info.given_name": { $regex: search, $options: "i" } },
+      { "data.form_addr_and_phone.email": { $regex: search, $options: "i" } },
+    ]
+
+    if(mongoose.Types.ObjectId.isValid(search))
+      conditions.push({ "_id": search })
+
+    finalCond.push({ $or: conditions })
+  }
+  if(checkout) {
+    let conditions = []
+    checkout.split(",").forEach(value => {
+      switch(value) {
+        case 'not_completed':
+          conditions.push({ 'completed': false })
+          break;
+        case 'not_paid':
+          conditions.push({ 'completed': true, 'transaction': {$in: [null, undefined]} })
+          break;
+        case 'paid':
+          conditions.push({ 'completed': true, 'transaction': {$ne: null} })
+          break;
+      }
+    })
+    if(conditions.length)
+      finalCond.push({ $or: conditions })
+  }
+  if(automation_status) {
+    let conditions = []
+    automation_status.split(",").forEach(value => {
+      switch(value) {
+        case 'not_completed':
+          conditions.push({ 'completed': false })
+          break;
+        case 'pending':
+          conditions.push({ 'completed': true, 'automation_status': {$in: [null, undefined]} })
+          break;
+        case 'in_progress':
+          conditions.push({ 'completed': true, 'automation_status.result': 'processing' })
+          break;
+        case 'failed':
+          conditions.push({ 'completed': true, $or: [{'automation_status.result': 'fail'}, {'automation_status.error': {$ne: null}}]})
+          break;
+        case 'not_sent':
+          conditions.push({ 'completed': true, 'automation_status.result': 'success', 'automation_status.email_status': false})
+          break;
+        case 'success':
+          conditions.push({ 'completed': true, 'automation_status.result': 'success', 'automation_status.email_status': {$ne: false}})
+          break;
+      }
+    })
+    if(conditions.length)
+      finalCond.push({ $or: conditions})
+  }
+
+  DS160Application.count( finalCond.length ? {$and: finalCond}: {}, function(err, total) {
+    DS160Application.smlist({ limit, skip, filters: finalCond.length ? {$and: finalCond}: {} })
     .then(applications => {
       let results = applications.map(application => {
-        const cntryIndex = constants.countries_option_value_list.findIndex(value => value == application.data.interview_location)
-        const interview_location = constants.countries_option_label_list[cntryIndex]
         return {
           _id: application._id,
           app_id: application.app_id,
           completed: application.completed,
           paid: application.transaction ? true : false,
-          surname: application.data.form_personal_info.surname,
-          given_name: application.data.form_personal_info.given_name,
-          location: interview_location,
+          surname: application.data.personal.surname,
+          firstnames: application.data.personal.firstnames,
+          citizenCode: application.data.start.citizenCode,
           transaction: application.transaction,
           checkout_result: application.checkout_result,
-          email: application.data.form_addr_and_phone.email,
+          email: application.data.register.email,
           createdAt: application.createdAt,
-          automation_status: application.automation_status
+          automation_status: application.automation_status,
+          agency: application.agency,
+          ipaddr: application.ipaddr
         }
       })
       res.json({ list: results, total: total })
@@ -354,6 +370,7 @@ function remove(req, res, next) {
  * @returns {Application}
  */
 function sendEmail(req, res) {
+  const clientIp = req.clientIp
   const application = req.application
 
   const location = application.data.interview_location
@@ -373,6 +390,14 @@ function sendEmail(req, res) {
               error: null
             }
 
+            if(!application.history)
+              application.history = []
+            if(clientIp && !clientIp.startsWith(':'))
+              application.history.push({
+                function: 'sendEmail',
+                datetime: Date.now(),
+                ipaddr: clientIp,
+              })
             application
               .save()
               .then(savedApplication => {})
@@ -421,7 +446,6 @@ module.exports = {
   list, 
   remove, 
   automate, 
-  checkout, 
   smlist, 
   updateStatus, 
   completeOrder, 

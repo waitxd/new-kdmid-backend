@@ -7,7 +7,7 @@ const router = express.Router(); // eslint-disable-line new-cap
 
 router.route('/')
   /** GET /api/ds-160 - Get list of ds-160 applications */
-  .get(ds160Ctrl.list)
+  // .get(ds160Ctrl.list)
 
   /** POST /api/ds-160 - Create new ds-160 application */
   .post(validate(paramValidation.createApplication), ds160Ctrl.create);
@@ -24,9 +24,6 @@ router.route('/:applicationId')
 
   /** DELETE /api/ds-160/:applicationId - Delete application */
   .delete(ds160Ctrl.remove);
-
-router.route('/checkout/:applicationId')
-  .post(ds160Ctrl.checkout)
 
 router.route('/completeOrder/:applicationId')
   .post(ds160Ctrl.completeOrder)

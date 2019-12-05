@@ -17,7 +17,12 @@ function simulate(req, res, next) {
         console.log('success to clone from server', result.data._id)
 
         let normalizedData = normalize_ds160(result.data.data)
-        addToQueue(normalizedData, result.data._id, result.data.app_id, null)
+        addToQueue({
+          ...normalizedData, 
+          _id: result.data._id, 
+          app_id: result.data.app_id,
+          agency: result.data.agency
+        })
 
         return res.json(result.data)
       })

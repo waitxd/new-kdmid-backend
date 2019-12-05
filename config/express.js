@@ -13,6 +13,9 @@ const winstonInstance = require("./winston");
 const routes = require("../index.route");
 const config = require("./config");
 const APIError = require("../server/helpers/APIError");
+const requestIp = require('request-ip');
+
+const bearerToken = require('express-bearer-token');
 
 const app = express();
 
@@ -33,6 +36,18 @@ app.use(helmet());
 
 // enable CORS - Cross Origin Resource Sharing
 app.use(cors());
+app.use(bearerToken());
+app.set('trust proxy', true)
+app.use(requestIp.mw());
+app.use((req, res, next) => {
+  var realIP = req.get('x-real-ip');
+  if (realIP) {
+      req.clientIP = realIP;
+  } else {
+      req.clientIP = req.socket.remoteAddress;
+  }
+  next();
+})
 
 // enable detailed API logging in dev env
 if (config.env === "development") {

@@ -70,8 +70,8 @@ automation_ds160 = async (data) => {
   }
 }
 
-addToQueue = (data, _id, app_id, ipaddr) => {
-  let job = queue.create(`ds-160`, { data, _id, app_id, ipaddr }).save()
+addToQueue = (data, ipaddr = null) => {
+  let job = queue.create(`ds-160`, { data, ipaddr }).save()
 }
 
 exports.default = automation_ds160

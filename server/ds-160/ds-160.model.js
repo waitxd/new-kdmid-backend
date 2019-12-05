@@ -40,8 +40,18 @@ const DS160ApplicationSchema = new mongoose.Schema({
   },
   checkout_result: {
     type: Object
+  },
+  agency: {
+    type: String
+  },
+  ipaddr: {
+    type: String
+  },
+  history: {
+    type: Array,
+    default: []
   }
-});
+},{usePushEach: true});
 
 /**
  * Add your
@@ -99,6 +109,20 @@ DS160ApplicationSchema.statics = {
    */
   list({ skip = 0, limit = 10 } = {}) {
     return this.find()
+      .sort({ createdAt: -1 })
+      .skip(+skip)
+      .limit(+limit)
+      .exec();
+  },
+
+  /**
+   * List applications in descending order of 'createdAt' timestamp.
+   * @param {number} skip - Number of applications to be skipped.
+   * @param {number} limit - Limit number of applications to be returned.
+   * @returns {Promise<Application[]>}
+   */
+  smlist({ skip = 0, limit = 10, filters } = {}) {
+    return this.find( filters )
       .sort({ createdAt: -1 })
       .skip(+skip)
       .limit(+limit)
