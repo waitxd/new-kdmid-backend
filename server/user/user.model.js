@@ -20,25 +20,22 @@ const UserSchema = new mongoose.Schema({
     //   "Please fill a valid email address"
     // ],
     validate: {
-      isAsync: true,
       lowercase: true,
-      validator: function(value, isValid) {
+      validator: async function(value, isValid) {
         const self = this;
-        return self.constructor
-          .findOne({ email: value })
-          .exec(function(err, user) {
-            if (err) {
-              throw err;
-            } else if (user) {
-              if (self.id === user.id) {
-                // if finding and saving then it's valid even for existing email
-                return isValid(true);
-              }
-              return isValid(false);
-            } else {
-              return isValid(true);
-            }
-          });
+        return new Promise((res, rej) =>{
+          self.constructor.findOne({email: value, _id: {$ne: this._id}})
+              .then(data => {
+                  if(data) {
+                      res(false)
+                  } else {
+                      res(true)
+                  }
+              })
+              .catch(err => {
+                  res(false)
+              })
+        })
       },
       message: "The email address is already taken!"
     }
