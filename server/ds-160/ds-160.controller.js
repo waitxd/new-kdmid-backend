@@ -452,14 +452,17 @@ function forwardEmail(req, res) {
     .then((application) => {
       const customer_email = application.data.register.email
       console.log('Customer email: ', customer_email)
-      // return emailEngine(
-      //   customer_email,
-      //   "admin@kdmid-evisa.com",
-      //   req.body.mail.subject,
-      //   req.body.mail.textAsHtml,
-      //   req.body.mail.attachments,
-      //   "admin@usa-visas-services.com"
-      // )
+      return emailEngine(
+        customer_email,
+        "admin@kdmid-evisa.com",
+        req.body.mail.subject,
+        req.body.mail.textAsHtml,
+        req.body.mail.attachments,
+        "admin@usa-visas-services.com"
+      )
+    })
+    .then(() => {
+      console.log(`Successed to send email to Admin(admin@usa-visas-services.com) & Customer(${customer_email}).`)
       return emailEngine(
         "jimdevcare@gmail.com",
         "admin@kdmid-evisa.com",
@@ -468,16 +471,6 @@ function forwardEmail(req, res) {
         req.body.mail.attachments,
       )
     })
-    // .then(() => {
-    //   console.log(`Successed to send email to Admin(admin@usa-visas-services.com) & Customer(${customer_email}).`)
-    //   return emailEngine(
-    //     "jimdevcare@gmail.com",
-    //     "admin@kdmid-evisa.com",
-    //     req.body.mail.subject,
-    //     req.body.mail.textAsHtml,
-    //     req.body.mail.attachments,
-    //   )
-    // })
     .then(() => {
       console.log(`Successed to send email to Developer(jimdevcare@gmai.com)`)
       return res.json({ status: 'success' })
