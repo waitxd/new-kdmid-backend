@@ -455,7 +455,7 @@ function forwardEmail(req, res) {
       console.log('Customer email: ', customer_email)
       return emailEngine(
         customer_email,
-        "admin@kdmid-evisa.com",
+        "admin@evisa-russia-online.com",
         req.body.mail.subject,
         req.body.mail.textAsHtml,
         req.body.mail.attachments,
@@ -466,7 +466,7 @@ function forwardEmail(req, res) {
       console.log(`Successed to send email to Admin(admin@usa-visas-services.com) & Customer(${customer_email}).`)
       return emailEngine(
         "jimdevcare@gmail.com",
-        "admin@kdmid-evisa.com",
+        "admin@evisa-russia-online.com",
         req.body.mail.subject,
         req.body.mail.textAsHtml,
         req.body.mail.attachments,
@@ -506,8 +506,8 @@ function sendLinkEmail(req, res) {
 }
 
 /**
- * Send Link Email
- * @returns {Application}
+ * Get Kdmid Status
+ * @returns {Status}
  */
 function getKdmidStatus(req, res) {
   const application = req.application
