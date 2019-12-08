@@ -11,6 +11,9 @@ const DS160ApplicationSchema = new mongoose.Schema({
   app_id: {
     type: String
   },
+  kdmid_id: {
+    type: String
+  },
   automation_status: {
     type: Object
   },

@@ -38,7 +38,7 @@ Auto_Text = async (page, id, text, wait = false) => {
     if(wait) {
         await page.waitForSelector('#' + id, {visible: true})
     }
-    page.evaluate((id, text) => { (document.querySelector('#' + id)).readOnly = false; (document.querySelector('#' + id)).value = ''; }, id, text);
+    await page.evaluate((id, text) => { (document.querySelector('#' + id)).readOnly = false; (document.querySelector('#' + id)).value = ''; }, id, text);
     if(text && text.length)
         // await page.evaluate((id, text) => { (document.getElementById(id)).value = text; }, id, text);
         await page.type('#' + id, text);

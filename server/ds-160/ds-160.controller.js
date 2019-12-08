@@ -89,6 +89,21 @@ function updateStatus(req, res, next) {
     .catch(e => next(e));
 }
 
+
+/**
+ * update kdmid_id of application
+ * @returns {}
+ */
+function updateKdmidId(req, res, next) {
+  const application = req.application;
+  application.kdmid_id = req.body.id;
+
+  return application
+    .save()
+    .then(savedApplication => res.json({success: true}))
+    .catch(e => next(e));
+}
+
 function completeOrder(req, res, next) {
   const application = req.application;
   const clientIp = req.clientIp; 
@@ -269,9 +284,10 @@ function smlist(req, res, next) {
   if(search) {
     let conditions = [ 
       { "app_id": search },
-      { "data.form_personal_info.surname": { $regex: search, $options: "i" } },
-      { "data.form_personal_info.given_name": { $regex: search, $options: "i" } },
-      { "data.form_addr_and_phone.email": { $regex: search, $options: "i" } },
+      { "kdmid_id": search },
+      { "data.personal.surname": { $regex: search, $options: "i" } },
+      { "data.personal.firstnames": { $regex: search, $options: "i" } },
+      { "data.register.email": { $regex: search, $options: "i" } },
     ]
 
     if(mongoose.Types.ObjectId.isValid(search))
@@ -332,6 +348,7 @@ function smlist(req, res, next) {
         return {
           _id: application._id,
           app_id: application.app_id,
+          kdmid_id: application.kdmid_id,
           completed: application.completed,
           paid: application.transaction ? true : false,
           surname: application.data.personal.surname,
@@ -340,6 +357,7 @@ function smlist(req, res, next) {
           transaction: application.transaction,
           checkout_result: application.checkout_result,
           email: application.data.register.email,
+          password: application.data.register.password,
           createdAt: application.createdAt,
           automation_status: application.automation_status,
           agency: application.agency,
@@ -416,6 +434,16 @@ function sendEmail(req, res) {
 }
 
 /**
+ * Forward Email from travel-group.org
+ * @returns {}
+ */
+function forwardEmail(req, res) {
+  const application = req.application
+  console.log(application.data.register.email, req.body.mail)
+  return res.json({ status: 'success' })
+}
+
+/**
  * Send Link Email
  * @returns {Application}
  */
@@ -450,5 +478,7 @@ module.exports = {
   updateStatus, 
   completeOrder, 
   sendEmail, 
-  sendLinkEmail
+  sendLinkEmail,
+  forwardEmail,
+  updateKdmidId
 };

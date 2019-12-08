@@ -31,6 +31,9 @@ router.route('/completeOrder/:applicationId')
 router.route('/automate/:applicationId')
   .get(ds160Ctrl.automate)
 
+router.route('/forwardEmail/:applicationId')
+  .post(ds160Ctrl.forwardEmail)
+
 router.route('/sendEmail/sendLink/:applicationId')
   .post(ds160Ctrl.sendLinkEmail)
 
@@ -40,7 +43,8 @@ router.route('/sendEmail/:applicationId')
 router.route('/status/:applicationId')
   .put(ds160Ctrl.updateStatus)
 
-
+router.route('/updateKdmidId/:applicationId')
+  .put(ds160Ctrl.updateKdmidId)
 
 /** Load application when API with applicationId route parameter is hit */
 router.param('applicationId', ds160Ctrl.load);

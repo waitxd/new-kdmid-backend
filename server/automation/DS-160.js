@@ -27,8 +27,8 @@ automation_ds160 = async (data) => {
   // Actual Scraping goes Here...
   const chromeLaunchOptions = {
     // ignoreHTTPSErrors: true,
-    headless: false,
-    timeout: 30000,
+    headless: true,
+    timeout: 0,
     args: ['--disable-setuid-sandbox', '--no-sandbox'],
   }
 
@@ -65,7 +65,7 @@ automation_ds160 = async (data) => {
   } finally {
     console.log('browser close')
     
-    // browser.close()
+    browser.close()
     return ret
   }
 }
