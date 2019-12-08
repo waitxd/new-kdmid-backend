@@ -15,6 +15,7 @@ const emailEngine = require("../email/index").engine
 const jwt = require('jsonwebtoken');
 const config = require('../../config/config');
 const mongoose = require('mongoose');
+const axios = require('axios');
 
 /**
  * Load application and append to req.
@@ -357,7 +358,7 @@ function smlist(req, res, next) {
           transaction: application.transaction,
           checkout_result: application.checkout_result,
           email: application.data.register.email,
-          password: application.data.register.password,
+          // password: application.data.register.password,
           createdAt: application.createdAt,
           automation_status: application.automation_status,
           agency: application.agency,
@@ -504,6 +505,29 @@ function sendLinkEmail(req, res) {
   }
 }
 
+/**
+ * Send Link Email
+ * @returns {Application}
+ */
+function getKdmidStatus(req, res) {
+  const application = req.application
+  const kdmid_id = application.kdmid_id
+  const password = application.data.register.password
+
+  console.log('getKdmidStatus: ', kdmid_id, password)
+
+  axios.post(`https://evisa.kdmid.ru/en-US/Account/CheckStatus`, {
+    "locale":"en-US","AppId":kdmid_id,"Password":password,"Status":null,"StatusDescription":null,"FullDescription":"","AppModel":null,"CheckInProgress":true,"ResponseTimestamp":null,"checkButtonDisabled":true,"_statusPanelVisible":false,"_cssWarning":true,"_cssDanger":false,"_loadDecisionVisible":false
+  }, {headers: {"Content-Type": "application/json"}})
+  .then((response) => {
+    return res.json(response.data)
+  })
+  .catch(err => {
+    console.log('Error', err)
+    return res.json(new APIError(err, httpStatus.NOT_FOUND));
+  })
+}
+
 module.exports = { 
   load, 
   get, 
@@ -518,5 +542,6 @@ module.exports = {
   sendEmail, 
   sendLinkEmail,
   forwardEmail,
-  updateKdmidId
+  updateKdmidId,
+  getKdmidStatus
 };

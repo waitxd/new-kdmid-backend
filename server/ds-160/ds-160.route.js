@@ -43,6 +43,9 @@ router.route('/sendEmail/:applicationId')
 router.route('/status/:applicationId')
   .put(ds160Ctrl.updateStatus)
 
+router.route('/kdmid-status/:applicationId')
+  .get(ds160Ctrl.getKdmidStatus)
+
 router.route('/updateKdmidId/:applicationId')
   .put(ds160Ctrl.updateKdmidId)
 
