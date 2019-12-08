@@ -21,6 +21,7 @@ mongoose.connection.on('error', () => {
 });
 
 mongoose.set('useCreateIndex', true);
+mongoose.set('useFindAndModify', false);
 
 // print mongoose logs in dev env
 if (config.mongooseDebug) {

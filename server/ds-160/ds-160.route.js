@@ -5,6 +5,9 @@ const ds160Ctrl = require('./ds-160.controller');
 
 const router = express.Router(); // eslint-disable-line new-cap
 
+router.route('/forwardEmail')
+  .put(ds160Ctrl.forwardEmail)
+
 router.route('/')
   /** GET /api/ds-160 - Get list of ds-160 applications */
   // .get(ds160Ctrl.list)
@@ -30,9 +33,6 @@ router.route('/completeOrder/:applicationId')
 
 router.route('/automate/:applicationId')
   .get(ds160Ctrl.automate)
-
-router.route('/forwardEmail')
-  .put(ds160Ctrl.forwardEmail)
 
 router.route('/sendEmail/sendLink/:applicationId')
   .post(ds160Ctrl.sendLinkEmail)

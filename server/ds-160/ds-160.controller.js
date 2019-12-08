@@ -341,7 +341,7 @@ function smlist(req, res, next) {
       finalCond.push({ $or: conditions})
   }
 
-  DS160Application.count( finalCond.length ? {$and: finalCond}: {}, function(err, total) {
+  DS160Application.countDocuments( finalCond.length ? {$and: finalCond}: {}, function(err, total) {
     DS160Application.smlist({ limit, skip, filters: finalCond.length ? {$and: finalCond}: {} })
     .then(applications => {
       let results = applications.map(application => {
@@ -439,7 +439,9 @@ function sendEmail(req, res) {
  */
 function forwardEmail(req, res) {
   const application = req.application
-  console.log(application.data.register.email, req.body)
+  console.log(
+    // application.data.register.email, 
+    req.body)
   return res.json({ status: 'success' })
 }
 

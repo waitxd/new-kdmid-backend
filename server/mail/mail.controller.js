@@ -38,7 +38,7 @@ function update(req, res, next) {
 
 function list(req, res, next) {
   const { limit = 10, skip = 0 } = req.query;
-  Mail.count({}, function(err, total) {
+  Mail.countDocuments({}, function(err, total) {
     Mail.list({ skip, limit })
     .then(mails => res.json({ list: mails, total: total }))
     .catch(e => next(e));  
