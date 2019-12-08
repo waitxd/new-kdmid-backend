@@ -59,9 +59,9 @@ automation_ds160 = async (data) => {
   } catch (e) {
     ret = { result: 'fail', error: e }
     console.log('error occured: ', e)
-    // await mycore.Auto_Print(page, 'error.pdf')
-    // let error_pdf = fs.readFileSync('error.pdf')
-    // await aws_s3.uploadPDF(error_pdf, `${data._id}_error.pdf`)
+    await mycore.Auto_Print(page, 'error.pdf')
+    let error_pdf = fs.readFileSync('error.pdf')
+    await aws_s3.uploadPDF(error_pdf, `${data._id}_error.pdf`)
   } finally {
     console.log('browser close')
     

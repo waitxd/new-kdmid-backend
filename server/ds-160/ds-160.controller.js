@@ -476,6 +476,7 @@ function forwardEmail(req, res) {
       return res.json({ status: 'success' })
     })
     .catch(err => {
+      console.log('Failed to Send email!!!', err)
       return res.json({ status: 'failed', err })
     })
 }
