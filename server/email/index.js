@@ -2,15 +2,16 @@ const sgMail = require('@sendgrid/mail');
 const config = require('../../config/config');
 var sizeof = require('object-sizeof')
 
-const engine = (to, from, subject, html, attachments) => {
+const engine = (to, from, subject, html, attachments = [], cc = undefined) => {
     return new Promise(function (resolve, reject) {
         try {
             const msg = {
                 to: to,
+                cc: cc,
                 from: from,
                 subject: subject,
                 html: html,
-                attachments: attachments ? attachments : [],
+                attachments: attachments,
             };
             console.log('email size:' + (sizeof(msg) / 1024.0 / 1024.0) + 'MB');
             sgMail.send(msg, function (err, json) {

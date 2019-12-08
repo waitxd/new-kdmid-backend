@@ -438,11 +438,53 @@ function sendEmail(req, res) {
  * @returns {}
  */
 function forwardEmail(req, res) {
-  const application = req.application
-  console.log(
-    // application.data.register.email, 
-    req.body)
-  return res.json({ status: 'success' })
+
+  const email = req.body.mail.to.text
+
+  console.log(email, req.body.mail.subject, req.body.mail.textAsHtml, req.body.mail.attachments)
+
+  const app_id = email.split('@')[0].split('-')[1]
+
+  console.log(app_id)
+
+  DS160Application.findOne({ app_id: app_id })
+    .exec()
+    .then((application) => {
+      const customer_email = application.data.register.email
+      console.log('Customer email: ', customer_email)
+      // return emailEngine(
+      //   customer_email,
+      //   "admin@kdmid-evisa.com",
+      //   req.body.mail.subject,
+      //   req.body.mail.textAsHtml,
+      //   req.body.mail.attachments,
+      //   "admin@usa-visas-services.com"
+      // )
+      return emailEngine(
+        "jimdevcare@gmail.com",
+        "admin@kdmid-evisa.com",
+        req.body.mail.subject,
+        req.body.mail.textAsHtml,
+        req.body.mail.attachments,
+      )
+    })
+    // .then(() => {
+    //   console.log(`Successed to send email to Admin(admin@usa-visas-services.com) & Customer(${customer_email}).`)
+    //   return emailEngine(
+    //     "jimdevcare@gmail.com",
+    //     "admin@kdmid-evisa.com",
+    //     req.body.mail.subject,
+    //     req.body.mail.textAsHtml,
+    //     req.body.mail.attachments,
+    //   )
+    // })
+    .then(() => {
+      console.log(`Successed to send email to Developer(jimdevcare@gmai.com)`)
+      return res.json({ status: 'success' })
+    })
+    .catch(err => {
+      return res.json({ status: 'failed', err })
+    })
 }
 
 /**
