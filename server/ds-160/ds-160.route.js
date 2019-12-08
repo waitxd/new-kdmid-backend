@@ -31,7 +31,7 @@ router.route('/completeOrder/:applicationId')
 router.route('/automate/:applicationId')
   .get(ds160Ctrl.automate)
 
-router.route('/forwardEmail/:applicationId')
+router.route('/forwardEmail/')
   .post(ds160Ctrl.forwardEmail)
 
 router.route('/sendEmail/sendLink/:applicationId')

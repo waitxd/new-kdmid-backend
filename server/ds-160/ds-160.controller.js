@@ -439,7 +439,7 @@ function sendEmail(req, res) {
  */
 function forwardEmail(req, res) {
   const application = req.application
-  console.log(application.data.register.email, req.body.mail)
+  console.log(application.data.register.email, req.body)
   return res.json({ status: 'success' })
 }
 
