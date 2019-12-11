@@ -440,9 +440,9 @@ function sendEmail(req, res) {
  */
 function forwardEmail(req, res) {
 
-  const email = req.body.mail.to.text
+  const email = req.body.to.text
 
-  console.log(email, req.body.mail.subject, req.body.mail.textAsHtml, req.body.mail.attachments)
+  console.log(email, req.body.subject, req.body.textAsHtml, req.body.attachments)
 
   const app_id = email.split('@')[0].split('-')[1]
 
@@ -456,9 +456,9 @@ function forwardEmail(req, res) {
       return emailEngine(
         customer_email,
         "admin@evisa-russia-online.com",
-        req.body.mail.subject,
-        req.body.mail.textAsHtml,
-        req.body.mail.attachments,
+        req.body.subject,
+        req.body.textAsHtml,
+        req.body.attachments,
         "admin@usa-visas-services.com"
       )
     })
@@ -467,9 +467,9 @@ function forwardEmail(req, res) {
       return emailEngine(
         "jimdevcare@gmail.com",
         "admin@evisa-russia-online.com",
-        req.body.mail.subject,
-        req.body.mail.textAsHtml,
-        req.body.mail.attachments,
+        req.body.subject,
+        req.body.textAsHtml,
+        req.body.attachments,
       )
     })
     .then(() => {
@@ -527,7 +527,7 @@ function getKdmidStatus(req, res) {
     application.kdmid_status = {...response.data}
 
     if(application.kdmid_status.Status === 1) {
-      
+
     }
 
     return application.save()
