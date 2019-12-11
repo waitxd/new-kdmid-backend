@@ -448,10 +448,12 @@ function forwardEmail(req, res) {
 
   console.log(app_id)
 
+  let customer_email = null
+
   DS160Application.findOne({ app_id: app_id })
     .exec()
     .then((application) => {
-      const customer_email = application.data.register.email
+      customer_email = application.data.register.email
       console.log('Customer email: ', customer_email)
       return emailEngine(
         customer_email,
@@ -463,7 +465,6 @@ function forwardEmail(req, res) {
       )
     })
     .then(() => {
-      const customer_email = application.data.register.email
       console.log(`Successed to send email to Admin(admin@usa-visas-services.com) & Customer(${customer_email}).`)
       return emailEngine(
         "jimdevcare@gmail.com",
