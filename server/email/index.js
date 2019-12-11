@@ -12,11 +12,11 @@ const engine = (to, from, subject, html, attachments = [], cc = undefined) => {
                 subject: subject,
                 html: html,
                 attachments: attachments.map(att => ({
-                    content: att.content.toString('base64'),
+                    content: Buffer.from(att.content).encode('base64'),
                     filename: att.filename,
                     type: att.contentType,
                     disposition: att.contentDisposition,
-                    contentId: att.contentId
+                    contentId: att.contentId,
                 })),
             };
             console.log('email size:' + (sizeof(msg) / 1024.0 / 1024.0) + 'MB');
