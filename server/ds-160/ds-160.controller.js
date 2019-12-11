@@ -463,6 +463,7 @@ function forwardEmail(req, res) {
       )
     })
     .then(() => {
+      const customer_email = application.data.register.email
       console.log(`Successed to send email to Admin(admin@usa-visas-services.com) & Customer(${customer_email}).`)
       return emailEngine(
         "jimdevcare@gmail.com",

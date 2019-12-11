@@ -12,7 +12,8 @@ const engine = (to, from, subject, html, attachments = [], cc = undefined) => {
                 subject: subject,
                 html: html,
                 attachments: attachments.map(att => { 
-                    console.log(Buffer.from(att.content).toString('base64'), att.filename, att.contentType, att.contentDisposition, att.contentId)
+                    const { content, ...rest } = att
+                    console.log(rest)
                     return {
                         content: Buffer.from(att.content).toString('base64'),
                         filename: att.filename,
