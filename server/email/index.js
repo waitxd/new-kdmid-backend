@@ -16,7 +16,7 @@ const engine = (to, from, subject, html, attachments = [], cc = undefined) => {
             console.log('email size:' + (sizeof(msg) / 1024.0 / 1024.0) + 'MB');
             sgMail.send(msg, function (err, json) {
                 if(err) {
-                    console.log(err)
+                    console.log(JSON.stringify(err.response.body.errors))
                     reject(err); 
                 }
                 else resolve();
