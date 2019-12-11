@@ -16,6 +16,7 @@ const jwt = require('jsonwebtoken');
 const config = require('../../config/config');
 const mongoose = require('mongoose');
 const axios = require('axios');
+const download_kdmid_status = require('../automation/kdmid_status/index')
 
 /**
  * Load application and append to req.
@@ -525,11 +526,11 @@ function getKdmidStatus(req, res) {
   axios.post(`https://evisa.kdmid.ru/en-US/Account/CheckStatus`, {
     "locale":"en-US","AppId":kdmid_id,"Password":password,"Status":null,"StatusDescription":null,"FullDescription":"","AppModel":null,"CheckInProgress":true,"ResponseTimestamp":null,"checkButtonDisabled":true,"_statusPanelVisible":false,"_cssWarning":true,"_cssDanger":false,"_loadDecisionVisible":false
   }, {headers: {"Content-Type": "application/json"}})
-  .then((response) => {
+  .then(async (response) => {
     application.kdmid_status = {...response.data}
 
     if(application.kdmid_status.Status === 1) {
-
+      await download_kdmid_status.process(null, application)
     }
 
     return application.save()
