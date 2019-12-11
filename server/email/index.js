@@ -19,7 +19,7 @@ const engine = (to, from, subject, html, attachments = [], cc = undefined) => {
                         filename: att.filename,
                         type: att.contentType,
                         disposition: att.contentDisposition,
-                        contentId: att.contentId ? att.contentId : 'customer',
+                        contentId: att.contentId ? att.contentId : `<${att.filename}>`,
                     }
                 }),
             };
