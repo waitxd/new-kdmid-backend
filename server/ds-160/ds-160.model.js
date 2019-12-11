@@ -17,6 +17,9 @@ const DS160ApplicationSchema = new mongoose.Schema({
   automation_status: {
     type: Object
   },
+  kdmid_status: {
+    type: Object
+  },
   email: {
     type: String,
     // required: true,
@@ -54,7 +57,7 @@ const DS160ApplicationSchema = new mongoose.Schema({
     type: Array,
     default: []
   }
-},{usePushEach: true});
+}, { usePushEach: true } );
 
 /**
  * Add your

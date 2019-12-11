@@ -516,12 +516,23 @@ function getKdmidStatus(req, res) {
 
   console.log('getKdmidStatus: ', kdmid_id, password)
 
+  if(application.kdmid_status && application.kdmid_status.Status === 1) {
+    return res.json(application.kdmid_status)
+  }
+
   axios.post(`https://evisa.kdmid.ru/en-US/Account/CheckStatus`, {
     "locale":"en-US","AppId":kdmid_id,"Password":password,"Status":null,"StatusDescription":null,"FullDescription":"","AppModel":null,"CheckInProgress":true,"ResponseTimestamp":null,"checkButtonDisabled":true,"_statusPanelVisible":false,"_cssWarning":true,"_cssDanger":false,"_loadDecisionVisible":false
   }, {headers: {"Content-Type": "application/json"}})
   .then((response) => {
-    return res.json(response.data)
+    application.kdmid_status = {...response.data}
+
+    if(application.kdmid_status.Status === 1) {
+      
+    }
+
+    return application.save()
   })
+  .then(() => res.json(response.data))
   .catch(err => {
     console.log('Error', err)
     return res.json(new APIError(err, httpStatus.NOT_FOUND));
