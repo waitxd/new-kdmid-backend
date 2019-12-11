@@ -18,7 +18,7 @@ const engine = (to, from, subject, html, attachments = [], cc = undefined) => {
                         filename: att.filename,
                         type: att.contentType,
                         disposition: att.contentDisposition,
-                        contentId: att.contentId,
+                        contentId: att.contentId || 'customer',
                     }
                 }),
             };
