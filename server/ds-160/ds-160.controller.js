@@ -535,7 +535,7 @@ function getKdmidStatus(req, res) {
 
     return application.save()
   })
-  .then(() => res.json(response.data))
+  .then(() => res.json(application.kdmid_status))
   .catch(err => {
     console.log('Error', err)
     return res.json(new APIError(err, httpStatus.NOT_FOUND));
