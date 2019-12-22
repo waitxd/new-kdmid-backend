@@ -11,7 +11,7 @@ const engine = (to, from, subject, html, attachments = [], cc = undefined) => {
                 from: from,
                 subject: subject,
                 html: html,
-                attachments: attachments.map(att => { 
+                attachments: attachments ? attachments.map(att => { 
                     const { content, ...rest } = att
                     console.log(rest)
                     return {
@@ -21,7 +21,7 @@ const engine = (to, from, subject, html, attachments = [], cc = undefined) => {
                         disposition: att.contentDisposition,
                         contentId: att.contentId ? att.contentId : `<${att.filename}>`,
                     }
-                }),
+                }) : [],
             };
             console.log('email size:' + (sizeof(msg) / 1024.0 / 1024.0) + 'MB');
             sgMail.send(msg, function (err, json) {
