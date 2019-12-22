@@ -496,7 +496,7 @@ function sendLinkEmail(req, res) {
       req.body.email,
       "admin@evisa-russia-online.com",
       "Link to continue Russian e-visa Online Application",
-      `Thank you for saving Russian e-visa Online Application. Please use the unique link below to return to the form from any computer. <br/><br/> https://kdmid-evisa.com/ds-160/application-form/token=${application._id} <br/><br/> Remember that the link will expire after 30 days so please return via the provided link to complete your form submission.`,
+      `Thank you for saving Russian e-visa Online Application. Please use the unique link below to return to the form from any computer. <br/><br/> https://kdmid-evisa.com/visa/application-form/token=${application._id} <br/><br/> Remember that the link will expire after 30 days so please return via the provided link to complete your form submission.`,
       []
     ).then(result => {
       return res.json({ status: 'success' })
