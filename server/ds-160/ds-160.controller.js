@@ -494,10 +494,10 @@ function sendLinkEmail(req, res) {
   if(req.body.email) {
     emailEngine(
       req.body.email,
-      "support@usa-visas-services.com",
-      "Link to continue DS-160 Non-Immigrant US Visa Application",
-      `Thank you for saving DS-160 Non-Immigrant US Visa Application. Please use the unique link below to return to the form from any computer. <br/><br/> https://kdmid-evisa.com/ds-160/application-form/token=${application._id} <br/><br/> Remember that the link will expire after 30 days so please return via the provided link to complete your form submission.`,
-      null
+      "admin@evisa-russia-online.com",
+      "Link to continue Russian e-visa Online Application",
+      `Thank you for saving Russian e-visa Online Application. Please use the unique link below to return to the form from any computer. <br/><br/> https://kdmid-evisa.com/ds-160/application-form/token=${application._id} <br/><br/> Remember that the link will expire after 30 days so please return via the provided link to complete your form submission.`,
+      []
     ).then(result => {
       return res.json({ status: 'success' })
     }).catch(err => {
