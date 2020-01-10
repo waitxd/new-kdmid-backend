@@ -19,9 +19,9 @@ start = async (page, data) => {
     await mycore.Auto_PureRadio(page, ID_AgreedWithProcessing, start.b_processing, true)
     await mycore.Auto_PureRadio(page, ID_AgreedWithEmailNotifications, start.b_email_notification, true)
 
-    if(start.b_conditions && start.b_processing && start.b_email_notification) {
+    // if(start.b_conditions && start.b_processing && start.b_email_notification) {
         await Promise.all([page.evaluate(`document.getElementById("${BTN_Start}").focus();document.getElementById("${BTN_Start}").click();`), page.waitForNavigation()])
-    }
+    // }
 }
 
 exports.process = start;
