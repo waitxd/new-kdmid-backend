@@ -12,7 +12,7 @@ step_1 = async (page, data) => {
     let base64 = null
 
     let email = 'traveler-' + data.app_id + '@travel-group.org'
-    console.log(email)
+    console.log(email, register.password)
 
     await mycore.Auto_Text(page, 'Email', email, true)
     await mycore.Auto_Text(page, 'EmailConfirmation', email)

@@ -14,5 +14,7 @@ processStep = async (page, data) => {
 
     await page.waitForFunction(`document.querySelector("#btnSave") && document.querySelector("#btnSave").getAttribute("disabled") == null`)
     await page.evaluate(`document.querySelector("#btnSave").focus();document.querySelector("#btnSave").click();`)
+    await page.waitFor(1000)
+    console.log('clicked Save')
 }
 exports.process = processStep
