@@ -17,6 +17,7 @@ const config = require('../../config/config');
 const mongoose = require('mongoose');
 const axios = require('axios');
 const download_kdmid_status = require('../automation/kdmid_status/index')
+const _ = require('lodash')
 
 /**
  * Load application and append to req.
@@ -157,7 +158,7 @@ function create(req, res, next) {
       data: req.body.data,
       transaction: null,
       checkout_result: null,
-      app_id: counter.seq,
+      app_id: 'K' + counter.seq,
       agency: req.body.agency,
       ipaddr: clientIp
     });
@@ -353,12 +354,12 @@ function smlist(req, res, next) {
           kdmid_id: application.kdmid_id,
           completed: application.completed,
           paid: application.transaction ? true : false,
-          surname: application.data.personal.surname,
-          firstnames: application.data.personal.firstnames,
-          citizenCode: application.data.start.citizenCode,
+          surname: _.get(application, 'data.personal.surname'),
+          firstnames: _.get(application, 'data.personal.firstnames'),
+          citizenCode: _.get(application, 'data.start.citizenCode'),
           transaction: application.transaction,
           checkout_result: application.checkout_result,
-          email: application.data.register.email,
+          email: _.get(application, 'data.register.email'),
           // password: application.data.register.password,
           createdAt: application.createdAt,
           automation_status: application.automation_status,
