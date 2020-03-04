@@ -1,6 +1,7 @@
 const mycore = require('../common')
 const recaptcha = require('../recaptcha')
 const config = require('../../../config/config')
+const axios = require('axios')
 
 const ID_STEP_1_CAPTCHA_INPUT = 'CaptchaInputText'
 const ID_STEP_1_CAPTCHA_IMAGE = '#CaptchaImage'

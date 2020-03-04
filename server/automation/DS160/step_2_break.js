@@ -1,4 +1,3 @@
-const mycore = require('../common')
 const axios = require('axios');
 
 const BTN_Continue = 'createNewApp'
