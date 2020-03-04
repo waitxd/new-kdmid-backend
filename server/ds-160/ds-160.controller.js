@@ -512,6 +512,7 @@ function forwardEmail(req, res) {
   console.log(email, req.body.subject, req.body.textAsHtml, req.body.attachments)
 
   const subject = req.body.subject
+  const textAsHtml = req.body.textAsHtml
 
   const app_id = email.split('@')[0].split('-')[1]
 
