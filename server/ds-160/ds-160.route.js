@@ -52,6 +52,9 @@ router.route('/updateKdmidId/:applicationId')
 router.route('/updateEmailUniqueNumber/:applicationId')
   .put(ds160Ctrl.updateEmailUniqueNumber)
 
+router.route('/emailUniqueNumber/:applicationId')
+  .get(ds160Ctrl.getEmailUniqueNumber)
+
 router.route('/updateConfirmLink/:applicationId')
   .put(ds160Ctrl.updateConfirmLink)
 

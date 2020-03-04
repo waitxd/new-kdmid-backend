@@ -108,6 +108,16 @@ function updateKdmidId(req, res, next) {
 }
 
 /**
+ * get email_unique_number of application
+ * @returns {}
+ */
+function getEmailUniqueNumber(req, res, next) {
+  const application = req.application;
+
+  return res.json({ number: application.email_unique_number })
+}
+
+/**
  * update email_unique_number of application
  * @returns {}
  */
@@ -664,6 +674,7 @@ module.exports = {
   updateKdmidId,
   getKdmidStatus,
   updateEmailUniqueNumber,
+  getEmailUniqueNumber,
   updateConfirmLink,
   getConfirmLink,
 };

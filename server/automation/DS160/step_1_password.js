@@ -14,7 +14,12 @@ step_1 = async (page, data) => {
 
     let base64 = null
 
-    let number = parseInt(data.email_unique_number || 0) + 1
+    const jsonResponse = await axios.get(process.env.BACKEND_URL + `/ds-160/emailUniqueNumber/${data._id}`)
+
+    console.log('jsonResponse', jsonResponse)
+    const email_unique_number = jsonResponse ? parseInt(jsonResponse.number) : 0
+
+    let number = email_unique_number + 1
 
     let email = `traveler-${data.app_id}-${number}@travel-group.org`
     console.log(email, register.password)
