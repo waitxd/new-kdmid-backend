@@ -1,5 +1,6 @@
 const mycore = require('../common')
 const recaptcha = require('../recaptcha')
+const confirmlink = require('../confirmlink')
 const config = require('../../../config/config')
 const axios = require('axios')
 
@@ -19,6 +20,8 @@ step_1 = async (page, data) => {
     console.log(email, register.password)
 
     await axios.put(process.env.BACKEND_URL + `/ds-160/updateEmailUniqueNumber/${data._id}`, { number }, {headers: {"Content-Type": "application/json"}})
+
+    await confirmlink.initiateRequest(data._id)
 
     await Promise.all([page.evaluate(`document.querySelector("${ID_REGISTER}").click();`), page.waitForNavigation()])
 

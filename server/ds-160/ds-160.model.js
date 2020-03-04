@@ -17,6 +17,9 @@ const DS160ApplicationSchema = new mongoose.Schema({
   email_unique_number: {
     type: Number
   },
+  confirm_link: {
+    type: String
+  },
   automation_status: {
     type: Object
   },

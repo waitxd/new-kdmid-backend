@@ -52,6 +52,12 @@ router.route('/updateKdmidId/:applicationId')
 router.route('/updateEmailUniqueNumber/:applicationId')
   .put(ds160Ctrl.updateEmailUniqueNumber)
 
+router.route('/updateConfirmLink/:applicationId')
+  .put(ds160Ctrl.updateConfirmLink)
+
+router.route('/confirmLink/:applicationId')
+  .get(ds160Ctrl.getConfirmLink)
+
 /** Load application when API with applicationId route parameter is hit */
 router.param('applicationId', ds160Ctrl.load);
 

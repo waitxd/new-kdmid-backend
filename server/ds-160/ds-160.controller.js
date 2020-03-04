@@ -108,7 +108,7 @@ function updateKdmidId(req, res, next) {
 }
 
 /**
- * update kdmid_id of application
+ * update email_unique_number of application
  * @returns {}
  */
 function updateEmailUniqueNumber(req, res, next) {
@@ -119,6 +119,30 @@ function updateEmailUniqueNumber(req, res, next) {
     .save()
     .then(savedApplication => res.json({success: true}))
     .catch(e => next(e));
+}
+
+/**
+ * update confirm_link of application
+ * @returns {}
+ */
+function updateConfirmLink(req, res, next) {
+  const application = req.application;
+  application.confirm_link = req.body.link;
+
+  return application
+    .save()
+    .then(savedApplication => res.json({success: true}))
+    .catch(e => next(e));
+}
+
+/**
+ * get confirm_link of application
+ * @returns {}
+ */
+function getConfirmLink(req, res, next) {
+  const application = req.application;
+
+  return res.json({ link: application.confirm_link })
 }
 
 function completeOrder(req, res, next) {
@@ -451,6 +475,22 @@ function sendEmail(req, res) {
   // return res.json(req.application);
 }
 
+function extractLinkFromConfirmEmail(textAsHtml) {
+  let start = textAsHtml.indexOf('[')
+  let end = textAsHtml.indexOf(']')
+  if (start < 0 || end < 0)
+    return null
+  const atag = textAsHtml.slice(start + 1, end)
+  
+  start = atag.indexOf('>')
+  end = atag.lastIndexOf('<')
+  
+  if (start < 0 || end < 0)
+    return null
+    
+  return  atag.slice(start + 1, end)
+}
+
 /**
  * Forward Email from travel-group.org
  * @returns {}
@@ -461,43 +501,92 @@ function forwardEmail(req, res) {
 
   console.log(email, req.body.subject, req.body.textAsHtml, req.body.attachments)
 
+  const subject = req.body.subject
+
   const app_id = email.split('@')[0].split('-')[1]
 
   console.log(app_id)
 
-  let customer_email = null
+  if (!app_id) {
+    return res.json({ status: 'failed', err: 'app_id is wrong' })
+  }
 
   DS160Application.findOne({ app_id: app_id })
     .exec()
     .then((application) => {
+      if (!application) {
+        // Junk Emails
+        return res.json({ status: 'failed', err: 'Junk Email' })
+      }
+      let customer_email = null
       customer_email = application.data.register.email
       console.log('Customer email: ', customer_email)
-      return emailEngine(
-        customer_email,
-        "admin@evisa-russia-online.com",
-        req.body.subject,
-        req.body.textAsHtml,
-        req.body.attachments,
-        "admin@usa-visas-services.com"
-      )
-    })
-    .then(() => {
-      console.log(`Successed to send email to Admin(admin@usa-visas-services.com) & Customer(${customer_email}).`)
-      return emailEngine(
-        "jimdevcare@gmail.com",
-        "admin@evisa-russia-online.com",
-        req.body.subject,
-        req.body.textAsHtml,
-        req.body.attachments,
-      )
-    })
-    .then(() => {
-      console.log(`Successed to send email to Developer(jimdevcare@gmai.com)`)
-      return res.json({ status: 'success' })
-    })
-    .catch(err => {
-      console.log('Failed to Send email!!!', err)
-      return res.json({ status: 'failed', err })
+
+      if (subject.startsWith('e-visa notification')) {
+        emailEngine(
+          customer_email,
+          "admin@evisa-russia-online.com",
+          req.body.subject,
+          req.body.textAsHtml,
+          req.body.attachments,
+          "admin@usa-visas-services.com"
+        )
+          .then(() => {
+            console.log(`Successed to send email to Admin(admin@usa-visas-services.com) & Customer(${customer_email}).`)
+            return emailEngine(
+              "jimdevcare@gmail.com",
+              "admin@evisa-russia-online.com",
+              req.body.subject,
+              req.body.textAsHtml,
+              req.body.attachments,
+            )
+          })
+          .then(() => {
+            console.log(`Successed to send email to Developer(jimdevcare@gmai.com)`)
+            return res.json({ status: 'success' })
+          })
+          .catch(err => {
+            console.log('Failed to Send email!!!', err)
+            return res.json({ status: 'failed', err })
+          })
+      } else {
+        if (subject.startsWith('Please confirm your email for registration')) {
+          const link = extractLinkFromConfirmEmail(textAsHtml)
+
+          if (!link) {
+            console.log(`Failed to extract Link from email`)
+            return res.json({ status: 'failed', err: 'Failed to extract Link from email'})
+          } else {
+            application.confirm_link = link
+            application
+            .save()
+            .then(savedApplication => {
+              console.log('success to save confirm link')
+              return res.json({ status: 'success' })
+            })
+            .catch(e => {
+              console.log('failed to save confirm link')
+              return res.json({ status: 'failed', err: 'failed to set confirm_link' })
+            });
+          }
+        } else {
+          emailEngine(
+            "jimdevcare@gmail.com",
+            "admin@evisa-russia-online.com",
+            req.body.subject,
+            req.body.textAsHtml,
+            req.body.attachments,
+          )
+          .then(() => {
+            console.log(`Successed to send email to Developer(jimdevcare@gmai.com)`)
+            return res.json({ status: 'success' })
+          })
+          .catch(err => {
+            console.log('Failed to Send email!!!', err)
+            return res.json({ status: 'failed', err })
+          })
+        }
+      }
     })
 }
 
@@ -575,4 +664,6 @@ module.exports = {
   updateKdmidId,
   getKdmidStatus,
   updateEmailUniqueNumber,
+  updateConfirmLink,
+  getConfirmLink,
 };
