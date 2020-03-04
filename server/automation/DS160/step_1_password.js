@@ -5,6 +5,7 @@ const config = require('../../../config/config')
 const ID_STEP_1_CAPTCHA_INPUT = 'CaptchaInputText'
 const ID_STEP_1_CAPTCHA_IMAGE = '#CaptchaImage'
 const ID_STEP_1_START_BUTTON = '#registerForm > nav > div > button'
+const ID_REGISTER = '#loginForm > div > div > div:nth-child(4) > div > a'
 
 step_1 = async (page, data) => {
     const { register } = data
@@ -13,6 +14,8 @@ step_1 = async (page, data) => {
 
     let email = 'traveler-' + data.app_id + '@travel-group.org'
     console.log(email, register.password)
+
+    await Promise.all([page.evaluate(`document.querySelector("${ID_REGISTER}").click();`), page.waitForNavigation()])
 
     await mycore.Auto_Text(page, 'Email', email, true)
     await mycore.Auto_Text(page, 'EmailConfirmation', email)
