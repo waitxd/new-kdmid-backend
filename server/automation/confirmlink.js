@@ -19,16 +19,15 @@ async function pollForRequestResults(_id, retries = 30, interval = 1500, delay =
 }
 
 function requestCaptchaResults(_id) {
-    
-    const url = `http://2captcha.com/res.php?key=${apiKey}&action=get&id=${requestId}&json=1`;
     return async function () {
         return new Promise(async function (resolve, reject) {
-            const rawResponse = await axios.get(process.env.BACKEND_URL + `/ds-160/getConfirmLink/${_id}`)
-            console.log('------------------------', rawResponse)
-            if (!rawResponse || rawResponse.link === 'init') {
-                return reject(null)
+            const rawResponse = await axios.get(process.env.BACKEND_URL + `/ds-160/confirmLink/${_id}`)
+            if (!rawResponse || !rawResponse.data || rawResponse.data.link === 'init') {
+                console.log('want to continue polling')
+                return reject()
             }
-            resolve(rawResponse.link)
+            console.log('want to finish')
+            resolve(rawResponse.data.link)
         });
     }
 }

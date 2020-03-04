@@ -9,26 +9,12 @@ const ID_STEP_1_CAPTCHA_IMAGE = '#CaptchaImage'
 const ID_STEP_1_START_BUTTON = '#registerForm > nav > div > button'
 const ID_REGISTER = '#loginForm > div > div > div:nth-child(4) > div > a'
 
-step_1 = async (page, data) => {
+step_1 = async (page, data, email) => {
     const { register } = data
 
     let base64 = null
 
-    const jsonResponse = await axios.get(process.env.BACKEND_URL + `/ds-160/emailUniqueNumber/${data._id}`)
-
-    console.log('jsonResponse', jsonResponse)
-    const email_unique_number = jsonResponse ? parseInt(jsonResponse.number) : 0
-
-    let number = email_unique_number + 1
-
-    let email = `traveler-${data.app_id}-${number}@travel-group.org`
-    console.log(email, register.password)
-
-    await axios.put(process.env.BACKEND_URL + `/ds-160/updateEmailUniqueNumber/${data._id}`, { number }, {headers: {"Content-Type": "application/json"}})
-
     await confirmlink.initiateRequest(data._id)
-
-    await Promise.all([page.evaluate(`document.querySelector("${ID_REGISTER}").click();`), page.waitForNavigation()])
 
     await mycore.Auto_Text(page, 'Email', email, true)
     await mycore.Auto_Text(page, 'EmailConfirmation', email)
@@ -81,17 +67,22 @@ step_1 = async (page, data) => {
 
     //await Promise.all([page.evaluate(`document.getElementById("${ID_STEP_1_START_BUTTON}").click();`), page.waitForNavigation()])
     
-    await Promise.race([ page.waitForSelector('#registerForm > div:nth-child(4) > div > div:nth-child(2) > div > span'), page.waitForNavigation() ])
+    await Promise.race([ page.waitForFunction(() => {
+        selector => !document.querySelector(selector) || document.querySelector(selector).innerText !== "New user registration",
+        {},
+        "#contentContainer > section > div.step__heading > div > h4"
+    }), page.waitForNavigation() ])
 
-    let error = await page.evaluate( () => {
-        return document.querySelector('#registerForm > div:nth-child(4) > div > div:nth-child(2) > div > span')
+    let text = await page.evaluate( () => {
+        const elem = document.querySelector('#contentContainer > section > div.step__heading > div > h4')
+        return elem ? elem.innerText : null
     });
 
-    console.log(error)
+    console.log(text)
 
-    if( error )
+    if( text )
     {
-        await step_1(page, data)
+        await step_1(page, data, email)
         return;
     }
 }

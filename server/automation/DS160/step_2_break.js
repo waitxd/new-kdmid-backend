@@ -1,5 +1,6 @@
 const axios = require('axios')
 const confirmlink = require('../confirmlink')
+const mycore = require('../common')
 
 const BTN_Continue = 'createNewApp'
 const AppIdSelector = '#contentContainer > section > div.step__body > div > div > div > div > div > p.form-group__field-value.form-group__field-value--important'
@@ -7,7 +8,7 @@ const AppIdSelector = '#contentContainer > section > div.step__body > div > div 
 processStep = async (page, data) => {
 
     const link = await confirmlink.pollForRequestResults(data._id)
-    if( link == null )
+    if( !link )
     {
         console.log('Not received the confirm email')
         throw new Error('Not received confirm email')

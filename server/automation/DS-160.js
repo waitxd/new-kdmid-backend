@@ -1,6 +1,7 @@
 const puppeteer = require('puppeteer')
 const mycore = require('./common')
 const step_0 = require('./DS160/step_0')
+const step_1_before = require('./DS160/step_1_before')
 const step_1_password = require('./DS160/step_1_password')
 const step_2_break = require('./DS160/step_2_break')
 const step_4_visit = require('./DS160/step_4_visit')
@@ -10,6 +11,7 @@ const step_6_miscellaneous = require('./DS160/step_6_miscellaneous')
 const step_7_relatives = require('./DS160/step_7_relatives')
 const step_8_photo = require('./DS160/step_8_photo')
 const step_9_review = require('./DS160/step_9_review')
+const axios = require('axios')
 
 const config = require('../../config/config')
 
@@ -44,7 +46,19 @@ automation_ds160 = async (data) => {
     await page.goto(`https://evisa.kdmid.ru/`, {waitUntil: 'networkidle2'})
     await step_0.process(page, data)
 
-    await step_1_password.process(page, data)
+    const jsonResponse = await axios.get(process.env.BACKEND_URL + `/ds-160/emailUniqueNumber/${data._id}`)
+    if (!jsonResponse || !jsonResponse.data) {
+        throw new Error('get EmailUniqueNumber failed')
+    }
+    console.log('jsonResponse', jsonResponse.data.number)
+    const email_unique_number = parseInt(jsonResponse.data.number) || 0
+    let number = email_unique_number + 1
+    let email = `traveler-${data.app_id}-${number}@travel-group.org`
+    console.log(email)
+    await axios.put(process.env.BACKEND_URL + `/ds-160/updateEmailUniqueNumber/${data._id}`, { number }, {headers: {"Content-Type": "application/json"}})
+
+    await step_1_before.process(page, data)
+    await step_1_password.process(page, data, email)
     await step_2_break.process(page, data)
     await step_3_personal.process(page, data)
     await step_4_visit.process(page, data)
