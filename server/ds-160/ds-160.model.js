@@ -14,6 +14,9 @@ const DS160ApplicationSchema = new mongoose.Schema({
   kdmid_id: {
     type: String
   },
+  email_unique_number: {
+    type: Number
+  },
   automation_status: {
     type: Object
   },

@@ -49,6 +49,9 @@ router.route('/kdmid-status/:applicationId')
 router.route('/updateKdmidId/:applicationId')
   .put(ds160Ctrl.updateKdmidId)
 
+router.route('/updateEmailUniqueNumber/:applicationId')
+  .put(ds160Ctrl.updateEmailUniqueNumber)
+
 /** Load application when API with applicationId route parameter is hit */
 router.param('applicationId', ds160Ctrl.load);
 

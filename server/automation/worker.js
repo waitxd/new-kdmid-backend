@@ -16,10 +16,12 @@ queue.process(`ds-160`, async function(job, done) {
         }
     }, {headers: {"Content-Type": "application/json"}})
     .then()
-    .catch(err => console.log(err))
+    .catch(err => {
+        console.log('Error occured')
+    })
 
     const result = await automation_ds160(job.data.data);
-    console.log('finished', result)
+    console.log('finished', result.result)
     axios.put(process.env.BACKEND_URL + `/ds-160/status/${job.data.data._id}`, {
             automation_status: result,
         }, {headers: {"Content-Type": "application/json"}})

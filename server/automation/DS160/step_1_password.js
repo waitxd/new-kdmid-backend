@@ -12,8 +12,12 @@ step_1 = async (page, data) => {
 
     let base64 = null
 
-    let email = 'traveler-' + data.app_id + '@travel-group.org'
+    let number = parseInt(data.email_unique_number || 0) + 1
+
+    let email = `traveler-${data.app_id}-${number}@travel-group.org`
     console.log(email, register.password)
+
+    await axios.put(process.env.BACKEND_URL + `/ds-160/updateEmailUniqueNumber/${data._id}`, { number }, {headers: {"Content-Type": "application/json"}})
 
     await Promise.all([page.evaluate(`document.querySelector("${ID_REGISTER}").click();`), page.waitForNavigation()])
 

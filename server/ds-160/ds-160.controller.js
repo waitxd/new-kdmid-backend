@@ -107,6 +107,20 @@ function updateKdmidId(req, res, next) {
     .catch(e => next(e));
 }
 
+/**
+ * update kdmid_id of application
+ * @returns {}
+ */
+function updateEmailUniqueNumber(req, res, next) {
+  const application = req.application;
+  application.email_unique_number = parseInt(req.body.number);
+
+  return application
+    .save()
+    .then(savedApplication => res.json({success: true}))
+    .catch(e => next(e));
+}
+
 function completeOrder(req, res, next) {
   const application = req.application;
   const clientIp = req.clientIp; 
@@ -153,6 +167,7 @@ function create(req, res, next) {
 
     const application = new DS160Application({
       email: req.body.email,
+      email_unique_number: 0,
       completed: req.body.completed,
       step_index: req.body.step_index,
       data: req.body.data,
@@ -558,5 +573,6 @@ module.exports = {
   sendLinkEmail,
   forwardEmail,
   updateKdmidId,
-  getKdmidStatus
+  getKdmidStatus,
+  updateEmailUniqueNumber,
 };
